@@ -42,6 +42,8 @@ export default function LoginPage() {
     const onSubmit = async (data: object) => {
         try {
             const res: AxiosResponse = await axios.post(`${apiURL}/auth/sign-in`, data);
+            console.log(res.data);
+
             switch (res.status) {
                 case 200:
                     await Swal.fire({
@@ -50,6 +52,7 @@ export default function LoginPage() {
                         text: "Chuyển sang trang chủ",
                         timer: 2000
                     } as SweetAlertOptions);
+                    localStorage.setItem("access_token", res.data.access_token)
                     navigate("/");
                     break;
                 case 401:
