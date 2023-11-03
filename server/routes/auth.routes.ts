@@ -6,7 +6,6 @@ import {
     signUp,
     signIn,
     signInAdmin,
-    signupAdmin,
 } from '../controllers/auth.controller';
 
 router.post('/sign-up', (req: Request, res: Response) => signUp(req, res));

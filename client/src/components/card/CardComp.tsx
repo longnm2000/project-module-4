@@ -36,14 +36,14 @@ function CardProduct({ product }: { product: Product }) {
                         <b>Kích thước:</b> {product.size} inches
                     </Typography>
                     <Typography>
-                        <b>Tần số quét:</b> {product.refreshrateValue}
+                        <b>Tần số quét:</b> {product.refreshrateValue} HZ
                     </Typography>
 
                     <Typography>
-                        <b>Độ phần giải:</b> {product.resolutionValue} GB
+                        <b>Độ phần giải:</b> {product.resolutionValue}
                     </Typography>
                     <Typography>
-                        <b>Nhãn hiệu:</b> {product.manufacturerName} GB
+                        <b>Nhãn hiệu:</b> {product.manufacturerName}
                     </Typography>
 
                 </CardContent>

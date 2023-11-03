@@ -1,5 +1,4 @@
 import { Request, Response } from 'express';
-import moment from 'moment';
 import * as authService from '../services/auth.service';
 
 interface SignUpRequestBody {
@@ -86,20 +85,4 @@ export const signInAdmin = async (req: Request, res: Response) => {
     }
 };
 
-export const signupAdmin = async (req: Request, res: Response) => {
-    const { email, password }: SignInRequestBody = req.body;
-    try {
-        await authService.signupAdmin(email, password);
-        res.status(201).json({
-            message: "Sign up successfully",
-            status: 201,
-        });
-    } catch (error) {
-        console.error("Error while signing up:", error);
-        res.json({
-            message: "Failed to sign up",
-            error: error,
-            status: 500,
-        });
-    }
-};
+

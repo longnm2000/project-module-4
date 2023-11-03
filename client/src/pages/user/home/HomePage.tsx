@@ -1,6 +1,6 @@
 import FooterComp from "../../../components/footer/FooterComp"
 import HeaderComp from "../../../components/header/HeaderComp"
-import { Grid, Typography } from "@mui/material";
+import { Container, Grid, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import CardComp from "../../../components/card/CardComp";
@@ -23,16 +23,18 @@ function HomePage() {
     return (
         <>
             <HeaderComp />
-            <Typography variant="h4" marginBottom={2}>
-                MÀN HÌNH NỔI BẬT
-            </Typography>
-            <Grid container spacing={2} paddingBottom={3}>
-                {data.map((e, i) => (
-                    <Grid item key={i} xs={12} sm={6} md={3}>
-                        <CardComp product={e} />
-                    </Grid>
-                ))}
-            </Grid>
+            <Container>
+                <Typography variant="h4" marginBottom={3} marginTop={15}>
+                    MÀN HÌNH NỔI BẬT
+                </Typography>
+                <Grid container spacing={2} paddingBottom={3}>
+                    {data.map((e, i) => (
+                        <Grid item key={i} xs={12} sm={6} md={3}>
+                            <CardComp product={e} />
+                        </Grid>
+                    ))}
+                </Grid>
+            </Container>
             <FooterComp />
         </>
     )

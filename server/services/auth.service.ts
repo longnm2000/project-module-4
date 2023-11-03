@@ -44,7 +44,7 @@ export const signIn = async (email: string, password: string) => {
                 message: "User not found",
             };
         } else {
-            if (rows[0].isLogin === 1) {
+            if (rows[0].isLogin === 1 && process.env.TOKEN_SECRET) {
                 let hashPassword = rows[0].password;
                 let compare = bcrypt.compareSync(password, hashPassword);
                 if (!compare) {
@@ -62,7 +62,7 @@ export const signIn = async (email: string, password: string) => {
                                 lastName: rows[0].lastName,
                             },
                         },
-                        process.env.TOKEN_SECRET || "dwadw",
+                        process.env.TOKEN_SECRET,
                         { expiresIn: 12000 }
                     );
                     return {
@@ -86,11 +86,6 @@ export const signIn = async (email: string, password: string) => {
     }
 };
 
-export const signupAdmin = (email: string, password: string) => {
-    let salt = bcrypt.genSaltSync(10);
-    let hashPassword = bcrypt.hashSync(password, salt);
-    return adminService.create(email, hashPassword);
-};
 
 export const signInAdmin = async (email: string, password: string) => {
     try {
@@ -101,7 +96,7 @@ export const signInAdmin = async (email: string, password: string) => {
                 status: 404,
                 message: "Admin not found",
             };
-        } else {
+        } else if (process.env.TOKEN_SECRET) {
             let hashPassword = rows[0].password;
             let compare = bcrypt.compareSync(password, hashPassword);
 
@@ -118,7 +113,7 @@ export const signInAdmin = async (email: string, password: string) => {
                             name: rows[0].name,
                         },
                     },
-                    process.env.TOKEN_SECRET || "dwadw",
+                    process.env.TOKEN_SECRET,
                     { expiresIn: 12000 }
                 );
                 return {
@@ -127,6 +122,9 @@ export const signInAdmin = async (email: string, password: string) => {
                     access_token,
                 };
             }
+        }
+        return {
+            message: "failed"
         }
     } catch (error) {
         return {

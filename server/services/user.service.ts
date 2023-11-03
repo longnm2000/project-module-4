@@ -45,11 +45,10 @@ export const create = (
     );
 };
 
-export const update = (user: UpdateUser) => {
-    const { userId, isLogin } = user;
+export const update = (userId: any, isLogin: any) => {
     console.log(userId, isLogin);
     return connection.query<ResultSetHeader>(
-        "UPDATE `db_project`.`users` SET `isLogin` = ? WHERE (`userId` = ?)",
+        "UPDATE `project`.`users` SET `isLogin` = ? WHERE (`userId` = ?)",
         [isLogin, userId]
     );
 };

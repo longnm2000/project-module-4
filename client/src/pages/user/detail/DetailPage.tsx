@@ -10,90 +10,109 @@ import {
     Typography,
 } from "@mui/material";
 import axios from "axios";
+import numeral from "numeral";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+
 import Swal from "sweetalert2";
-import jwtDecode from "jwt-decode";
-import numeral from "numeral";
+import { jwtDecode } from "jwt-decode";
+import SliderComp from "../../../components/slider/SliderComp";
 import HeaderComp from "../../../components/header/HeaderComp";
 import FooterComp from "../../../components/footer/FooterComp";
 
-interface Product {
-    productId: number;
+
+interface ProductData {
     name: string;
     price: number;
-    cpu: string;
-    card: string;
-    ram: string;
-    ssd: string;
-    screenSize: string;
-    screenResolution: string;
-    weight: string;
-    // Add other properties here
+    detail: string;
+    size: number;
+    refreshrateValue: number;
+    resolutionValue: string;
+    quantity: number;
+    manufacturerName: string;
+    description: string;
 }
-
 interface Image {
-    type: number;
+    pictureId: number;
+    productId: number;
     source: string;
-    // Add other properties here
+    type: number;
 }
 
-function Detail() {
+interface CartItem {
+    productId: string;
+    userId: string;
+    productName: string;
+    price: number;
+    image: string;
+    quantity: number;
+}
+
+interface DecodedToken {
+    data: {
+        id: string;
+        email: string;
+        firstName: string;
+        lastName: string;
+    };
+    iat: number;
+    exp: number;
+}
+
+
+function DetailPage() {
     const { id } = useParams<{ id: string }>();
-    const [data, setData] = useState<{ product: Product; images: Image[] } | null>(
-        null
-    );
+    const [data, setData] = useState<ProductData | null>(null);
+    const [images, setImages] = useState<Image[]>([]);
+
 
     const fetchData = async () => {
         const response = await axios.get(`http://localhost:3000/api/v1/monitors/${id}`);
+        const imagesResponse = await axios.get(`http://localhost:3000/api/v1/pictures/${id}`);
         setData(response.data);
+        setImages(imagesResponse.data);
     };
+    console.log(data);
 
     useEffect(() => {
         fetchData();
     }, []);
 
-    let decoded: object | null = null;
-    if (localStorage.getItem("token")) {
-        decoded = jwtDecode(localStorage.getItem("token"));
+    let decoded: DecodedToken | null = null;
+    if (localStorage.getItem("access_token")) {
+        decoded = jwtDecode(localStorage.getItem("access_token") || "");
+
     }
 
-    const productAvatar = data?.images?.find((e) => +e.type === 1);
+    const productAvatar = images?.find((e) => e.type === 1);
+
     const handleAddToCart = () => {
-        if (localStorage.getItem("token")) {
+
+        if (localStorage.getItem("access_token") && decoded && data && id) {
             const cartItem = {
-                productId: +id,
-                userId: +decoded?.data.id,
-                productName: data?.product.name,
-                price: +data.product.price,
-                image: productAvatar?.source,
-                cpu: data?.product.cpu,
-                card: data?.product.card,
-                ram: data?.product.ram,
-                ssd: data?.product.ssd,
-                screenSize: data?.product.screenSize,
-                screenResolution: data?.product.screenResolution,
+                productId: id,
+                userId: decoded.data.id,
+                productName: data.name,
+                price: +data.price,
+                image: productAvatar?.source || "adwwa",
+                quantity: 1,
             };
+            console.log(cartItem);
+            const existingCartItems: CartItem[] = JSON.parse(localStorage.getItem("cartItems") || "[]");
 
-            // Lấy danh sách sản phẩm trong giỏ hàng từ local storage
-            const existingCartItems = JSON.parse(localStorage.getItem("cartItems") || "[]");
-
-            // Kiểm tra nếu sản phẩm đã tồn tại trong giỏ hàng
             const itemIndex = existingCartItems.findIndex(
-                (item: any) => +item.productId === +cartItem.productId
+                (item: CartItem) => item.productId === cartItem.productId
             );
+            console.log(itemIndex);
 
             if (itemIndex !== -1) {
-                // Cập nhật số lượng nếu sản phẩm đã tồn tại trong giỏ hàng
                 existingCartItems[itemIndex].quantity += 1;
             } else {
-                // Thêm sản phẩm vào giỏ hàng nếu chưa tồn tại
-                cartItem.quantity = 1;
                 existingCartItems.push(cartItem);
             }
 
-            // Lưu danh sách sản phẩm đã cập nhật vào local storage
             localStorage.setItem("cartItems", JSON.stringify(existingCartItems));
+
             Swal.fire({
                 icon: "success",
                 title: "Sản phẩm đã được thêm vào giỏ hàng",
@@ -113,35 +132,36 @@ function Detail() {
             <HeaderComp />
             <div className="bg-color-green">
                 <Container>
-                    <Box paddingY={2}>
+                    <Box paddingY={2} marginTop={10}>
                         <Breadcrumbs aria-label="breadcrumb">
                             <Button component={Link} to={"/"}>
                                 Trang chủ
                             </Button>
                             <Button component={Link} to={"/laptop"}>
-                                Laptop
+                                Màn hình
                             </Button>
                             <Button component={Link} to={`/laptop/${id}`}>
-                                {data?.product?.name}
+                                {data?.name}
                             </Button>
                         </Breadcrumbs>
                     </Box>
                     <Grid container spacing={2} paddingBottom={2}>
                         <Grid item md={6} xs={12}>
                             <Box>
-                                <SliderProductImage images={data?.images} />
+                                {/* <SliderProductImage images={data?.images} /> */}
+                                <SliderComp images={images} />
                             </Box>
                         </Grid>
                         <Grid item md={6}>
                             <Box>
-                                <Typography variant="h3">{data?.product?.name}</Typography>
+                                <Typography variant="h3">{data?.name}</Typography>
                                 <Typography
                                     color={"error"}
                                     fontSize={23}
                                     fontWeight={"bold"}
                                     marginY={2}
                                 >
-                                    Giá bán: {numeral(data?.product?.price).format("0, ")} VND
+                                    Giá bán: {numeral(data?.price || 0).format("0, ")} VND
                                 </Typography>
                                 <Box>
                                     <Button
@@ -161,28 +181,25 @@ function Detail() {
                                     <Typography variant="h6">Thông tin sản phẩm:</Typography>
                                     <List>
                                         <ListItem>
-                                            <ListItemText primary={"CPU: " + data?.product?.cpu} />
+                                            <ListItemText primary={"Thông tin: " + data?.detail} />
                                         </ListItem>
                                         <ListItem>
-                                            <ListItemText primary={"GPU: " + data?.product?.card} />
+                                            <ListItemText primary={"Kích thước: " + data?.size + " Inches"} />
                                         </ListItem>
                                         <ListItem>
-                                            <ListItemText
-                                                primary={`RAM: ${data?.product?.ram} GB ${data?.product?.ramType}`}
-                                            />
+                                            <ListItemText primary={"Tần số quét: " + data?.refreshrateValue + " Hz"} />
                                         </ListItem>
                                         <ListItem>
-                                            <ListItemText primary={`SSD: ${data?.product?.ssd} GB`} />
+                                            <ListItemText primary={`Độ phân giải: ${data?.resolutionValue || ""}`} />
                                         </ListItem>
                                         <ListItem>
-                                            <ListItemText
-                                                primary={`Màn hình: ${data?.product?.screenSize} inches ${data?.product?.screenResolution} ${data?.product?.refreshRate} Hz`}
-                                            />
+                                            <ListItemText primary={`Số lượng: ${data?.quantity || 0}`} />
                                         </ListItem>
                                         <ListItem>
-                                            <ListItemText
-                                                primary={"Cân nặng: " + data?.product?.weight + " Kg"}
-                                            />
+                                            <ListItemText primary={`Nhà sản xuất: ${data?.manufacturerName || ""}`} />
+                                        </ListItem>
+                                        <ListItem>
+                                            <ListItemText primary={"Miêu tả: " + data?.description} />
                                         </ListItem>
                                     </List>
                                 </Box>
@@ -196,4 +213,4 @@ function Detail() {
     );
 }
 
-export default Detail;
+export default DetailPage;
